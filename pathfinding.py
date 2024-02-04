@@ -125,7 +125,7 @@ def walk_path(start: tuple, end: tuple, map_section: MapSection) -> list:
     while queue:
         path = queue.pop(0)
         node = path[-1]
-        adj = map_section.one_tick_walk_dir(node[0], node[1])[0]
+        adj = map_section.walk_range(node[0], node[1])[0]
         for tile in adj:
             if tile not in visited:
                 new_path = list(path)
@@ -168,7 +168,7 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
             f_score = tentative_g_score + heuristic(next_node, end)
             queue.put((f_score, next(unique), next_node))
         # walk
-        walk_adj = map_section.one_tick_walk_dir(current_node.pos[0], current_node.pos[1])
+        walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
         for i in range(len(walk_adj[0])):
             next_node = current_node.move(walk_adj[0][i][0], walk_adj[0][i][1], walk_adj[1][i])
             next_node = next_node.update()
@@ -189,7 +189,7 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
                     queue.put((f_score, next(unique), next_node))
         # bladed dive
         if current_node.can_bd():
-            bd_adj = map_section.bd_range_dir(current_node.pos[0], current_node.pos[1])
+            bd_adj = map_section.bd_range(current_node.pos[0], current_node.pos[1])
             for i in range(len(bd_adj[0])):
                 next_node = current_node.bd(bd_adj[0][i][0], bd_adj[0][i][1], bd_adj[1][i])
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:

@@ -1,5 +1,5 @@
 from pathfinding import *
-from mapsection import *
+import mapsection
 import time
 
 if __name__ == '__main__':
@@ -7,10 +7,6 @@ if __name__ == '__main__':
     """
     Map Name: file should be named name + "Map.png"
     """
-
-    name = "WestArdy"
-    map_section = create_map_section(name)
-
 
     """
     Starting State and Goal Location 
@@ -24,13 +20,17 @@ if __name__ == '__main__':
     Generally set direction to be not facing the assumed path to the end location, so as not to allow surges on the 
     first tick in a direction you won't be facing in practice
     """
-    start = (108, 42)  # 108, 42
-    end = (7, 51)  # (56, 44), (7, 51)
+    start = (2540, 3306)
+    end = (2476, 3315)
+    # start = (108, 42)
+    # end = (44, 51)
     direction = 0
     surge_escape_cd = 0
     second_surge_cd = 0
     second_escape_cd = 0
     bladed_dive_cd = 0
+
+    map_section = mapsection.MapSection.create_map_section(0, 2432, 2560, 3264, 3392)
 
     """
     Shortcuts
@@ -60,13 +60,10 @@ if __name__ == '__main__':
                     
     uncommenting last line on long paths might speed up the algorithm
     """
+
     heuristic = l_infinity_cds
-    st = time.time()
-    map_section.process_move_data()
-    # map_section.process_heuristic_data(end)
+    # map_section.process_move_data()
     # map_section.process_bd_data()
-    et = time.time()
-    print(et-st)
 
     """
     Shouldn't need to change
@@ -74,7 +71,6 @@ if __name__ == '__main__':
 
     test_start = State(start, direction, surge_escape_cd, second_surge_cd, second_escape_cd, bladed_dive_cd)
     st = time.time()
-
     test_path = a_star_end_buffer(test_start, end, map_section, heuristic)
     et = time.time()
     tiles = []
