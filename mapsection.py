@@ -30,7 +30,7 @@ class MapSection:
         tiles = []
         for i in range(21):
             for j in range(21):
-                if bd_data & (2 ** (j + i * 21)):
+                if bd_data & (1 << (j + i * 21)):
                     u = x - 10 + j
                     v = y - 10 + i
                     tiles.append((u, v))
