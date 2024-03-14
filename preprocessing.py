@@ -161,17 +161,17 @@ def inflate(data):
 if __name__ == '__main__':
     st = time.time()
     for floor in range(0, 1):
-        for a in range(0, 10):
-            for b in range(0, 20):
-                # file = open("MapData/Map/collision-"+str(a)+"-"+str(b)+"-"+str(floor)+".bin", "rb")
-                # file_data = file.read()
-                # file_data = inflate(file_data)
-                # array = np.frombuffer(file_data, dtype=np.uint8)
-                # array = array.reshape((1280, 1280), order='F')
-                # file.close()
+        for a in range(0, 5):
+            for b in range(0, 10):
+                file = open("MapData/Map/collision-"+str(a)+"-"+str(b)+"-"+str(floor)+".bin", "rb")
+                file_data = file.read()
+                file_data = inflate(file_data)
+                array = np.frombuffer(file_data, dtype=np.uint8)
+                array = array.reshape((1280, 1280), order='F')
+                file.close()
                 # np.save("MapData/Map/move-"+str(a)+"-"+str(b)+"-"+str(floor)+".npy", array)
-                process = ProcessData(floor)
-                array = process.build_se_array(a, b)
-                np.save("MapData/SE/se-" + str(a) + "-" + str(b) + "-" + str(floor) + ".npy", array)
+                # process = ProcessData(floor)
+                # array = process.build_se_array(a, b)
+                # np.save("MapData/SE/se-" + str(a) + "-" + str(b) + "-" + str(floor) + ".npy", array)
     et = time.time()
     print(et-st)

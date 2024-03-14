@@ -5,10 +5,6 @@ import time
 if __name__ == '__main__':
 
     """
-    Map Name: file should be named name + "Map.png"
-    """
-
-    """
     Starting State and Goal Location 
     
     surge_escape_cd is the cooldown of the first charge of both surge and escape (this should be set to the same number 
@@ -22,31 +18,16 @@ if __name__ == '__main__':
     """
     start = (2540, 3306)
     end = (2476, 3315)
-    # start = (108, 42)
-    # end = (44, 51)
+    floor = 0
     direction = 0
     surge_escape_cd = 0
     second_surge_cd = 0
     second_escape_cd = 0
     bladed_dive_cd = 0
 
-    map_section = mapsection.MapSection.create_map_section(0, 2432, 2560, 3264, 3392)
+    map_section = mapsection.MapSection.create_map_section(floor, 2400, 2600, 3264, 3392)
 
-    """
-    Shortcuts
-    
-    Shortcuts are one-way currently
-    
-    a - the tile the player is standing on before taking the shortcut
-    b - the tile the player is standing on after taking the shortcut
-    direction - direction the player is facing after taking the shortcut
-    time - time the shortcut takes in ticks
-    mandatory - True if the shortcut has to be a part of the path (theres no other way to reach the end location)
-                False (work in progress)
-    """
-    # map_section.add_shortcut(a=(104, 66), b=(104, 71), direction=0, time=1, mandatory=True)
-    # map_section.add_shortcut(a=(104, 78), b=(104, 79), direction=4, time=1, mandatory=True)
-    # map_section.add_shortcut(a=(103, 78), b=(103, 79), direction=4, time=1, mandatory=True)
+
 
     """
     Heuristic for A*
@@ -93,3 +74,19 @@ if __name__ == '__main__':
     #     for y in range(map_section.heuristic_data.shape[1]):
     #         if map_section.heuristic_data[x][y] != -1:
     #             map_section.color_tiles([(x, y)], (0, 255, 0, (int(map_section.heuristic_data[x][y]))*20))
+
+    # """
+    # Shortcuts
+    #
+    # Shortcuts are one-way currently
+    #
+    # a - the tile the player is standing on before taking the shortcut
+    # b - the tile the player is standing on after taking the shortcut
+    # direction - direction the player is facing after taking the shortcut
+    # time - time the shortcut takes in ticks
+    # mandatory - True if the shortcut has to be a part of the path (theres no other way to reach the end location)
+    #             False (work in progress)
+    # """
+    # # map_section.add_shortcut(a=(104, 66), b=(104, 71), direction=0, time=1, mandatory=True)
+    # # map_section.add_shortcut(a=(104, 78), b=(104, 79), direction=4, time=1, mandatory=True)
+    # # map_section.add_shortcut(a=(103, 78), b=(103, 79), direction=4, time=1, mandatory=True)
