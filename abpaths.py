@@ -16,8 +16,8 @@ if __name__ == '__main__':
     Generally set direction to be not facing the assumed path to the end location, so as not to allow surges on the 
     first tick in a direction you won't be facing in practice
     """
-    start = (2540, 3306)
-    end = (2476, 3315)
+    start = (3373, 3080)
+    end = (3376, 2790)
     floor = 0
     direction = 0
     surge_escape_cd = 0
@@ -25,9 +25,8 @@ if __name__ == '__main__':
     second_escape_cd = 0
     bladed_dive_cd = 0
 
-    map_section = mapsection.MapSection.create_map_section(floor, 2400, 2600, 3264, 3392)
-
-
+    radius = 40
+    map_section = mapsection.MapSection.create_map_section(floor, min(start[0], end[0]) - radius, max(start[0], end[0]) + radius, min(start[1], end[1]) - radius, max(start[1], end[1]) + radius)
 
     """
     Heuristic for A*
@@ -39,12 +38,9 @@ if __name__ == '__main__':
     l_infinity_cds - L∞ norm but subtracting max distance movement abilities based on cool-downs
                     Slower, optimal
                     
-    uncommenting last line on long paths might speed up the algorithm
     """
 
     heuristic = l_infinity_cds
-    # map_section.process_move_data()
-    # map_section.process_bd_data()
 
     """
     Shouldn't need to change
