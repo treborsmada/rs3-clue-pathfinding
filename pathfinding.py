@@ -143,20 +143,9 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
     g_score = dict()
     g_score[start_state] = 0
     came_from = dict()
-    # shortcuts = map.shortcuts
     while not queue.empty():
         current_node = queue.get()[2]
-        # for shortcut in shortcuts:
-        #     if shortcut[4]:
-        #         if shortcut[0] == node.pos:
-        #             time = shortcut[3]
-        #             while time > 0:
-        #                 node = node.update()
-        #                 time = time - 1
-        #                 path[1].append("shortcut")
-        #             node = node.move(shortcut[1][0], shortcut[1][1], shortcut[2])
-        #             path[0].append((node, node, node))
-
+        # check if at end
         if end[0] - 1 <= current_node.pos[0] <= end[0] + 1 and end[1] - 1 <= current_node.pos[1] <= end[1] + 1:
             return reconstruct_path(came_from, current_node)
         # wait
@@ -207,6 +196,127 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
                     f_score = tentative_g_score + heuristic(next_node, end)
                     queue.put((f_score, next(unique), next_node))
 
+def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: MapSection, heuristic) -> tuple:
+    unique = count()
+    queue = qqueue.PriorityQueue()
+    queue.put((0, next(unique), start_state))
+    g_score = dict()
+    g_score[start_state] = 0
+    came_from = dict()
+    while not queue.empty():
+        current_node = queue.get()[2]
+        # check if at end
+        if end[0] - 1 <= current_node.pos[0] <= end[0] + 1 and end[1] - 1 <= current_node.pos[1] <= end[1] + 1:
+            return reconstruct_path(came_from, current_node)
+        # wait
+        tentative_g_score = g_score[current_node] + 1
+        next_node = current_node.update()
+        if next_node not in g_score or tentative_g_score < g_score[next_node]:
+            came_from[next_node] = current_node, "wait"
+            g_score[next_node] = tentative_g_score
+            f_score = tentative_g_score + heuristic(next_node, end)
+            queue.put((f_score, next(unique), next_node))
+        # walk
+        walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
+        for i in range(len(walk_adj[0])):
+            next_node = current_node.move(walk_adj[0][i][0], walk_adj[0][i][1], walk_adj[1][i])
+            next_node = next_node.update()
+            if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                came_from[next_node] = current_node, "walk"
+                g_score[next_node] = tentative_g_score
+                f_score = tentative_g_score + heuristic(next_node, end)
+                queue.put((f_score, next(unique), next_node))
+        # surge
+        if current_node.can_surge():
+            next_node = current_node.surge(map_section)
+            if next_node is not None:
+                next_node = next_node.update()
+                if next_node not in g_score or g_score[current_node] < g_score[next_node]:
+                    came_from[next_node] = current_node, "surge"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
+        # escape
+        if current_node.can_escape():
+            next_node = current_node.escape(map_section)
+            if next_node is not None:
+                next_node = next_node.update()
+                if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                    came_from[next_node] = current_node, "escape"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
+        # bladed dive
+        tentative_g_score = g_score[current_node]
+        if current_node.can_bd():
+            bd_adj = map_section.bd_range(current_node.pos[0], current_node.pos[1])
+            for i in range(len(bd_adj[0])):
+                next_node = current_node.bd(bd_adj[0][i][0], bd_adj[0][i][1], bd_adj[1][i])
+                if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                    came_from[next_node] = current_node, "bd"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
+
+def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -> tuple:
+    unique = count()
+    queue = qqueue.PriorityQueue()
+    queue.put((0, next(unique), start_state))
+    g_score = dict()
+    g_score[start_state] = 0
+    came_from = dict()
+    while not queue.empty():
+        current_node = queue.get()[2]
+        # check if at end
+        if end[0] == current_node[0] and end[1] == current_node[1]:
+            return reconstruct_path(came_from, current_node)
+        # wait
+        tentative_g_score = g_score[current_node] + 1
+        next_node = current_node.update()
+        if next_node not in g_score or tentative_g_score < g_score[next_node]:
+            came_from[next_node] = current_node, "wait"
+            g_score[next_node] = tentative_g_score
+            f_score = tentative_g_score + heuristic(next_node, end)
+            queue.put((f_score, next(unique), next_node))
+        # walk
+        walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
+        for i in range(len(walk_adj[0])):
+            next_node = current_node.move(walk_adj[0][i][0], walk_adj[0][i][1], walk_adj[1][i])
+            next_node = next_node.update()
+            if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                came_from[next_node] = current_node, "walk"
+                g_score[next_node] = tentative_g_score
+                f_score = tentative_g_score + heuristic(next_node, end)
+                queue.put((f_score, next(unique), next_node))
+        # surge
+        tentative_g_score = g_score[current_node]
+        if current_node.can_surge():
+            next_node = current_node.surge(map_section)
+            if next_node is not None:
+                if next_node not in g_score or g_score[current_node] < g_score[next_node]:
+                    came_from[next_node] = current_node, "surge"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
+        # bladed dive
+        if current_node.can_bd():
+            bd_adj = map_section.bd_range(current_node.pos[0], current_node.pos[1])
+            for i in range(len(bd_adj[0])):
+                next_node = current_node.bd(bd_adj[0][i][0], bd_adj[0][i][1], bd_adj[1][i])
+                if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                    came_from[next_node] = current_node, "bd"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
+        # escape
+        if current_node.can_escape():
+            next_node = current_node.escape(map_section)
+            if next_node is not None:
+                if next_node not in g_score or tentative_g_score < g_score[next_node]:
+                    came_from[next_node] = current_node, "escape"
+                    g_score[next_node] = tentative_g_score
+                    f_score = tentative_g_score + heuristic(next_node, end)
+                    queue.put((f_score, next(unique), next_node))
 
 # heuristic functions
 def l_infinity(state: State, end: tuple) -> float:
