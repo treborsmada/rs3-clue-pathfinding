@@ -10,7 +10,7 @@ RS_LENGTH = 6400
 
 class MapSection:
 
-    def __init__(self, floor: int, x_start: int, x_end: int, y_start: int, y_end: int, move_data: np.array, bd_data: np.array, se_data: np.array, cell_size: int = 5):
+    def __init__(self, floor: int, x_start: int, x_end: int, y_start: int, y_end: int, move_data: np.array, bd_data: np.array, se_data: np.array, walk_data:np.array, cell_size: int = 5):
         self.floor = floor
         self.x_start = x_start
         self.x_end = x_end
@@ -19,6 +19,7 @@ class MapSection:
         self.move_data = move_data
         self.bd_data = bd_data
         self.se_data = se_data
+        self.walk_data = walk_data
         self.cell_size = cell_size
         self.image = self.create_image()
 
@@ -85,29 +86,17 @@ class MapSection:
         return x - x_diff, y - y_diff
 
     def walk_range(self, x: int, y: int):
+        walk_data = self.walk_data[x - self.x_start, y - self.y_start]
         tiles = []
         directions = []
-        start = self.move_data[x - self.x_start, y - self.y_start]
-        adj = adj_positions(x, y)
-        visited = {(x, y)}
-        queue = []
-        for i in range(8):
-            j = (2 * i + i // 4) % 8
-            if free_direction(start, j):
-                tiles.append(adj[j])
-                directions.append(j)
-                visited.add(adj[j])
-                queue.append(adj[j])
-        while queue:
-            current = queue.pop(0)
-            move = self.move_data[current[0] - self.x_start, current[1] - self.y_start]
-            temp_adj = adj_positions(current[0], current[1])
-            for i in range(8):
-                if free_direction(move, i):
-                    if temp_adj[i] not in visited:
-                        tiles.append(temp_adj[i])
-                        directions.append(i)
-                        visited.add(temp_adj[i])
+        for i in range(5):
+            for j in range(5):
+                direction = (walk_data >> ((j+i*5)*4)) & 15
+                if direction < 8:
+                    u = x - 2 + j
+                    v = y - 2 + i
+                    tiles.append((u, v))
+                    directions.append(direction)
         return tiles, directions
 
     def create_image(self):
@@ -249,7 +238,8 @@ class MapSection:
         move_data = cls.build_movement_array(floor, x_start, x_end, y_start, y_end)
         bd_data = cls.build_bd_array(floor, x_start, x_end, y_start, y_end)
         se_data = cls.build_se_array(floor, x_start, x_end, y_start, y_end)
-        return cls(floor, x_start, x_end, y_start, y_end, move_data, bd_data, se_data)
+        walk_data = cls.build_walk_array(floor, x_start, x_end, y_start, y_end)
+        return cls(floor, x_start, x_end, y_start, y_end, move_data, bd_data, se_data, walk_data)
 
     @staticmethod
     def build_movement_array(floor: int, x_start: int, x_end: int, y_start: int, y_end: int):
@@ -315,4 +305,29 @@ class MapSection:
         se_data = np.concatenate(rows, axis=1)
         return se_data.astype('int32')
 
+    @staticmethod
+    def build_walk_array(floor: int, x_start: int, x_end: int, y_start: int, y_end: int):
+        chunk_x = x_start // 640, x_end // 640
+        chunk_y = y_start // 640, y_end // 640
+        rows = []
+        for j in range(chunk_y[1] - chunk_y[0] + 1):
+            row = []
+            for i in range(chunk_x[1] - chunk_x[0] + 1):
+                arr = np.load(
+                    "MapData/Walk/walk-" + str(chunk_x[0] + i) + "-" + str(chunk_y[0] + j) + "-" + str(floor) + ".npy")
+                x_1 = max((x_start % 640) - i * 640, 0)
+                x_2 = x_end - x_start + (x_start % 640) + 1
+                y_1 = max((y_start % 640) - j * 640, 0)
+                y_2 = y_end - y_start + (y_start % 640) - j * 640 + 1
+                row.append(arr[x_1:x_2, y_1:y_2])
+            rows.append(np.concatenate(row, axis=0))
+        walk_data = np.concatenate(rows, axis=1)
+        new_walk_data = np.zeros((walk_data.shape[0], walk_data.shape[1]), dtype=object)
+        for x in range(walk_data.shape[0]):
+            for y in range(walk_data.shape[1]):
+                sum = 0
+                for i in range(2):
+                    sum += int(walk_data[x][y][i]) << (64 * i)
+                new_walk_data[x][y] = sum
+        return new_walk_data
 

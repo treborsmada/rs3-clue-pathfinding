@@ -143,10 +143,14 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
     g_score = dict()
     g_score[start_state] = 0
     came_from = dict()
+    count_num = 0
+    heuristic_data = np.load("HeuristicData/l_infinity_cds.npy")
     while not queue.empty():
         current_node = queue.get()[2]
+        count_num += 1
         # check if at end
         if end[0] - 1 <= current_node.pos[0] <= end[0] + 1 and end[1] - 1 <= current_node.pos[1] <= end[1] + 1:
+            print(count_num)
             return reconstruct_path(came_from, current_node)
         # wait
         tentative_g_score = g_score[current_node] + 1
@@ -154,8 +158,8 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
         if next_node not in g_score or tentative_g_score < g_score[next_node]:
             came_from[next_node] = current_node, "wait"
             g_score[next_node] = tentative_g_score
-            f_score = tentative_g_score + heuristic(next_node, end)
-            queue.put((f_score, next(unique), next_node))
+            f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+            queue.put((f_score, -next(unique), next_node))
         # walk
         walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
         for i in range(len(walk_adj[0])):
@@ -164,8 +168,8 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
             if next_node not in g_score or tentative_g_score < g_score[next_node]:
                 came_from[next_node] = current_node, "walk"
                 g_score[next_node] = tentative_g_score
-                f_score = tentative_g_score + heuristic(next_node, end)
-                queue.put((f_score, next(unique), next_node))
+                f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                queue.put((f_score, -next(unique), next_node))
         # surge
         tentative_g_score = g_score[current_node]
         if current_node.can_surge():
@@ -174,8 +178,8 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
                 if next_node not in g_score or g_score[current_node] < g_score[next_node]:
                     came_from[next_node] = current_node, "surge"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # bladed dive
         if current_node.can_bd():
             bd_adj = map_section.bd_range(current_node.pos[0], current_node.pos[1])
@@ -184,8 +188,8 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "bd"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # escape
         if current_node.can_escape():
             next_node = current_node.escape(map_section)
@@ -193,8 +197,8 @@ def a_star_end_buffer(start_state: State, end: tuple, map_section: MapSection, h
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "escape"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
 
 def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: MapSection, heuristic) -> tuple:
     unique = count()
@@ -203,6 +207,7 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
     g_score = dict()
     g_score[start_state] = 0
     came_from = dict()
+    heuristic_data = np.load("HeuristicData/l_infinity_cds.npy")
     while not queue.empty():
         current_node = queue.get()[2]
         # check if at end
@@ -214,8 +219,8 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
         if next_node not in g_score or tentative_g_score < g_score[next_node]:
             came_from[next_node] = current_node, "wait"
             g_score[next_node] = tentative_g_score
-            f_score = tentative_g_score + heuristic(next_node, end)
-            queue.put((f_score, next(unique), next_node))
+            f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+            queue.put((f_score, -next(unique), next_node))
         # walk
         walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
         for i in range(len(walk_adj[0])):
@@ -224,8 +229,8 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
             if next_node not in g_score or tentative_g_score < g_score[next_node]:
                 came_from[next_node] = current_node, "walk"
                 g_score[next_node] = tentative_g_score
-                f_score = tentative_g_score + heuristic(next_node, end)
-                queue.put((f_score, next(unique), next_node))
+                f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                queue.put((f_score, -next(unique), next_node))
         # surge
         if current_node.can_surge():
             next_node = current_node.surge(map_section)
@@ -234,8 +239,8 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
                 if next_node not in g_score or g_score[current_node] < g_score[next_node]:
                     came_from[next_node] = current_node, "surge"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # escape
         if current_node.can_escape():
             next_node = current_node.escape(map_section)
@@ -244,8 +249,8 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "escape"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # bladed dive
         tentative_g_score = g_score[current_node]
         if current_node.can_bd():
@@ -255,8 +260,8 @@ def a_star_end_buffer_se_tick_loss(start_state: State, end: tuple, map_section: 
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "bd"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
 
 def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -> tuple:
     unique = count()
@@ -265,6 +270,7 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
     g_score = dict()
     g_score[start_state] = 0
     came_from = dict()
+    heuristic_data = np.load("HeuristicData/l_infinity_cds.npy")
     while not queue.empty():
         current_node = queue.get()[2]
         # check if at end
@@ -276,8 +282,8 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
         if next_node not in g_score or tentative_g_score < g_score[next_node]:
             came_from[next_node] = current_node, "wait"
             g_score[next_node] = tentative_g_score
-            f_score = tentative_g_score + heuristic(next_node, end)
-            queue.put((f_score, next(unique), next_node))
+            f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+            queue.put((f_score, -next(unique), next_node))
         # walk
         walk_adj = map_section.walk_range(current_node.pos[0], current_node.pos[1])
         for i in range(len(walk_adj[0])):
@@ -286,8 +292,8 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
             if next_node not in g_score or tentative_g_score < g_score[next_node]:
                 came_from[next_node] = current_node, "walk"
                 g_score[next_node] = tentative_g_score
-                f_score = tentative_g_score + heuristic(next_node, end)
-                queue.put((f_score, next(unique), next_node))
+                f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                queue.put((f_score, -next(unique), next_node))
         # surge
         tentative_g_score = g_score[current_node]
         if current_node.can_surge():
@@ -296,8 +302,8 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
                 if next_node not in g_score or g_score[current_node] < g_score[next_node]:
                     came_from[next_node] = current_node, "surge"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # bladed dive
         if current_node.can_bd():
             bd_adj = map_section.bd_range(current_node.pos[0], current_node.pos[1])
@@ -306,8 +312,8 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "bd"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
         # escape
         if current_node.can_escape():
             next_node = current_node.escape(map_section)
@@ -315,8 +321,8 @@ def a_star(start_state: State, end: tuple, map_section: MapSection, heuristic) -
                 if next_node not in g_score or tentative_g_score < g_score[next_node]:
                     came_from[next_node] = current_node, "escape"
                     g_score[next_node] = tentative_g_score
-                    f_score = tentative_g_score + heuristic(next_node, end)
-                    queue.put((f_score, next(unique), next_node))
+                    f_score = tentative_g_score + heuristic(next_node, end, heuristic_data)
+                    queue.put((f_score, -next(unique), next_node))
 
 # heuristic functions
 def l_infinity(state: State, end: tuple) -> float:
@@ -326,37 +332,9 @@ def l_infinity(state: State, end: tuple) -> float:
     return distance / 22
 
 
-def l_infinity_cds(state: State, end: tuple) -> float:
+def l_infinity_cds(state: State, end: tuple, data) -> float:
     distance = max(abs(state.pos[0] - end[0]), abs(state.pos[1] - end[1])) - 1
-    if distance <= 0:
-        return 0
-    ticks = 0
-    secd = state.secd
-    scd = state.scd
-    bdcd = state.bdcd
-    while distance > 0:
-        if secd == 0 or scd == 0:
-            distance -= 10
-            if secd == 0:
-                secd = 17
-                scd = max(2, scd)
-            else:
-                secd = max(2, secd)
-                scd = 17
-            if distance <= 0:
-                ticks += 1
-        elif bdcd == 0:
-            distance -= 10
-            bdcd = 17
-            if distance <= 0:
-                ticks += 1
-        else:
-            distance -= 2
-            ticks += 1
-            secd -= 1
-            scd -= 1
-            bdcd -= 1
-    return ticks
+    return data[distance, state.secd, state.scd, state.ecd, state.bdcd]
 
 
 def zero_heuristic(state: State, end: tuple) -> float:

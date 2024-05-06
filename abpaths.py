@@ -16,8 +16,8 @@ if __name__ == '__main__':
     Generally set direction to be not facing the assumed path to the end location, so as not to allow surges on the 
     first tick in a direction you won't be facing in practice
     """
-    start = (3067, 3362)
-    end = (3066, 3322)
+    start = (3479, 3098)
+    end = (3509, 3025)
     floor = 0
     direction = 4
     surge_escape_cd = 0
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     second_escape_cd = 0
     bladed_dive_cd = 0
 
-    radius = 80
+    radius = 100
     map_section = mapsection.MapSection.create_map_section(floor, min(start[0], end[0]) - radius, max(start[0], end[0]) + radius, min(start[1], end[1]) - radius, max(start[1], end[1]) + radius)
 
     """
